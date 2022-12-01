@@ -53,7 +53,7 @@ where
     })
 }
 
-fn part1(input: &str) -> u32 {
+fn part1(input: &str) -> Answer {
     let max_calories = input
         .split("\n\n")
         .map(|snacks| {
@@ -67,7 +67,7 @@ fn part1(input: &str) -> u32 {
     max_calories.expect("max calories exist")
 }
 
-fn part2(input: &str) -> u32 {
+fn part2(input: &str) -> Answer {
     let mut calories = input
         .split("\n\n")
         .map(|snacks| {
