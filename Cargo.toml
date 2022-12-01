@@ -1,0 +1,9 @@
+[workspace]
+members = ["day*"]
+
+[workspace.package]
+name = "aoc-2022"
+authors = ["drmason13"]
+version = "0.1.0"
+edition = "2021"
+
