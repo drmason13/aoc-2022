@@ -3,3 +3,6 @@ name = "day01"
 authors.workspace = true
 version.workspace = true
 edition.workspace = true
+
+[dependencies]
+shared = { path = "../shared" }

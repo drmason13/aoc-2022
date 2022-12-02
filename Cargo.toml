@@ -1,5 +1,5 @@
 [workspace]
-members = ["day*"]
+members = ["shared", "day*"]
 
 [workspace.package]
 authors = ["drmason13"]
