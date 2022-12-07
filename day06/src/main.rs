@@ -1,6 +1,5 @@
 use std::sync::{mpsc, Arc};
 
-use itertools::Itertools;
 use shared::{receive_answers, run_part_threaded};
 
 fn main() {
@@ -15,19 +14,15 @@ fn main() {
 }
 
 fn part1(input: &str) -> usize {
-    input
-        .chars()
-        .tuple_windows()
-        .enumerate()
-        .find(|(_, (a, b, c, d))| !(a == b || a == c || a == d || b == c || b == d || c == d))
-        .map(|(n, _)| n)
-        .expect("puzzle solution")
-        + 4
+    find_first_subsequence_of_unique_chars(input, 4)
 }
 
 fn part2(input: &str) -> usize {
+    find_first_subsequence_of_unique_chars(input, 14)
+}
+
+fn find_first_subsequence_of_unique_chars(input: &str, sequence_length: usize) -> usize {
     let input = input.as_bytes();
-    let sequence_length = 14;
     let max_offset = input.len() - sequence_length;
     // loop through every window of sequence_length chars
     for offset in 0..max_offset {
