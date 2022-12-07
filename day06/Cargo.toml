@@ -1,0 +1,9 @@
+[package]
+name = "day06"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+itertools = "0.10.5"
+shared = { path = "../shared" }
