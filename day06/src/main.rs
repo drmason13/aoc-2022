@@ -2,6 +2,13 @@ use std::sync::{mpsc, Arc};
 
 use shared::{receive_answers, run_part_threaded};
 
+#[derive(Debug)]
+pub struct SubSequence {
+    pub start: usize,
+    pub end: usize,
+    pub value: String,
+}
+
 fn main() {
     let (tx, rx) = mpsc::channel();
     let input = std::fs::read_to_string("./input/2022/day6.txt").expect("failed to read input");
@@ -14,14 +21,18 @@ fn main() {
 }
 
 fn part1(input: &str) -> usize {
-    find_first_subsequence_of_unique_chars(input, 4)
+    let subsequence = find_first_subsequence_of_unique_chars(input, 4);
+    println!("{subsequence:?}");
+    subsequence.end
 }
 
 fn part2(input: &str) -> usize {
-    find_first_subsequence_of_unique_chars(input, 14)
+    let subsequence = find_first_subsequence_of_unique_chars(input, 14);
+    println!("{subsequence:?}");
+    subsequence.end
 }
 
-fn find_first_subsequence_of_unique_chars(input: &str, sequence_length: usize) -> usize {
+fn find_first_subsequence_of_unique_chars(input: &str, sequence_length: usize) -> SubSequence {
     let input = input.as_bytes();
     let max_offset = input.len() - sequence_length;
     // loop through every window of sequence_length chars
@@ -38,7 +49,11 @@ fn find_first_subsequence_of_unique_chars(input: &str, sequence_length: usize) -
             }
         }
         if !match_found {
-            return end;
+            return SubSequence {
+                start,
+                end,
+                value: String::from_utf8_lossy(&input[start..end]).to_string(),
+            };
         }
     }
     panic!("expected puzzle solution");
