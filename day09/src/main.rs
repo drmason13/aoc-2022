@@ -1,5 +1,6 @@
 use std::{
     fmt,
+    ops::BitAnd,
     str::FromStr,
     sync::{mpsc, Arc},
 };
@@ -56,44 +57,82 @@ impl FromStr for Move {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-enum Piece {
-    Head,
-    Tail,
-    Both,
+struct Piece(u16);
+
+const HEAD_: Piece = Piece(0b10000000000);
+const ONE__: Piece = Piece(0b01000000000);
+const TWO__: Piece = Piece(0b00100000000);
+const THREE: Piece = Piece(0b00010000000);
+const FOUR_: Piece = Piece(0b00001000000);
+const FIVE_: Piece = Piece(0b00000100000);
+const SIX__: Piece = Piece(0b00000010000);
+const SEVEN: Piece = Piece(0b00000001000);
+const EIGHT: Piece = Piece(0b00000000100);
+const NINE_: Piece = Piece(0b00000000010);
+const TAIL_: Piece = Piece(0b00000000001);
+const ALL__: Piece = Piece(0b11111111111);
+
+impl Piece {
+    fn contains(&self, other: Piece) -> bool {
+        self.0 & other.0 > 0
+    }
+
+    fn take(&self, other: Piece) -> Piece {
+        Piece(!(other.0) & self.0)
+    }
+
+    fn add(&self, other: Piece) -> Piece {
+        Piece(self.0 | other.0)
+    }
 }
 
 impl fmt::Debug for Piece {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use Piece::*;
         write!(
             f,
             "{}",
-            match self {
-                Head => "H",
-                Tail => "T",
-                Both => "B",
-            },
+            match self.0 {
+                0b10000000000 => "H",
+                0b01000000000 => "1",
+                0b00100000000 => "2",
+                0b00010000000 => "3",
+                0b00001000000 => "4",
+                0b00000100000 => "5",
+                0b00000010000 => "6",
+                0b00000001000 => "7",
+                0b00000000100 => "8",
+                0b00000000010 => "9",
+                0b00000000001 => "T",
+                // multiple pieces
+                _ => "@",
+            }
         )
     }
 }
 
-fn update_tail(grid: &mut InfGrid<Piece>, tail: Vector, head: Vector) -> Vector {
-    let delta = head - tail;
+fn update_piece(
+    grid: &mut InfGrid<Piece>,
+    piece: Piece,
+    follower: Vector,
+    leader: Vector,
+    update: bool,
+) -> Vector {
+    let delta = leader - follower;
     let Vector { x: dx, y: dy } = delta;
-    let tail_move = match (dx, dy) {
+    let follow_move = match (dx, dy) {
         // positive dx
         (dx, dy) if dx > 1 => match dy {
             0 => Vector::new(1, 0),
             1 => Vector::new(1, 1),
             -1 => Vector::new(1, -1),
-            _ => panic!("tail fell behind"),
+            _ => panic!("follower fell behind"),
         },
         // negative dx
         (dx, dy) if dx < -1 => match dy {
             0 => Vector::new(-1, 0),
             1 => Vector::new(-1, 1),
             -1 => Vector::new(-1, -1),
-            _ => panic!("tail fell behind"),
+            _ => panic!("follower fell behind"),
         },
 
         // positive dy
@@ -101,40 +140,38 @@ fn update_tail(grid: &mut InfGrid<Piece>, tail: Vector, head: Vector) -> Vector 
             0 => Vector::new(0, 1),
             1 => Vector::new(1, 1),
             -1 => Vector::new(-1, 1),
-            _ => panic!("tail fell behind"),
+            _ => panic!("follower fell behind"),
         },
         // negative dy
         (dx, dy) if dy < -1 => match dx {
             0 => Vector::new(0, -1),
             1 => Vector::new(1, -1),
             -1 => Vector::new(-1, -1),
-            _ => panic!("tail fell behind"),
+            _ => panic!("follower fell behind"),
         },
-        _ => return tail,
+        _ => return follower,
     };
-    let new_tail = tail + tail_move;
-    move_piece(grid, Piece::Tail, tail, tail + tail_move, true);
-    new_tail
+    let new_position = follower + follow_move;
+    move_piece(grid, piece, follower, new_position, update);
+    new_position
 }
 
 fn move_piece(grid: &mut InfGrid<Piece>, piece: Piece, from: Vector, to: Vector, visit: bool) {
-    use Piece::*;
     // take from
     match grid.get_mut(from) {
         Some(cell) => match cell.value {
-            Some(p) if p == piece => {
-                cell.value = None;
+            Some(p) => {
+                if p.contains(piece) {
+                    match p.take(piece) {
+                        Piece(0) => cell.value = None,
+                        Piece(x) => cell.value = Some(Piece(x)),
+                    }
+                } else {
+                    // if p bit isn't set then panic:
+                    panic!("Tried to move a {piece:?} from coords {from:?} but it wasn't there!\nGrid:\n{grid:?}");
+                }
             }
-            Some(Both) => {
-                cell.value = Some(match piece {
-                    Head => Tail,
-                    Tail => Head,
-                    Both => unreachable!("why are you taking both?"),
-                });
-            }
-            _ => {
-                panic!("Tried to move a {piece:?} from coords {from:?} but there was only a Head there!\nGrid:\n{grid:?}");
-            }
+            None => panic!("Tried to move a {piece:?} from coords {from:?} but there was nothing there!\nGrid:\n{grid:?}"),
         },
         None => {
             panic!("Tried to move a {piece:?} from coords {from:?} but it was not there!\nGrid:\n{grid:?}");
@@ -144,9 +181,9 @@ fn move_piece(grid: &mut InfGrid<Piece>, piece: Piece, from: Vector, to: Vector,
     // add to
     match grid.get_mut(to) {
         Some(cell) => match cell.value {
-            Some(p) if p == piece || p == Both => panic!("Tried to move a {piece:?} to coords {from:?} but there was already a Head there!\nGrid:\n{grid:?}"),
-            Some(_) => {
-                cell.value = Some(Both);
+            Some(p) if p.contains(piece) => panic!("Tried to move a {piece:?} to coords {from:?} but there it was already there!\nGrid:\n{grid:?}"),
+            Some(p) => {
+                cell.value = Some(p.add(piece));
                 cell.visited = cell.visited || visit;
             }
             None => {
@@ -176,22 +213,21 @@ fn parse_input(input: &str) -> impl Iterator<Item = Move> + '_ {
 }
 
 fn part1(input: &str) -> usize {
-    use Piece::*;
     let mut grid: InfGrid<Piece> = InfGrid::new();
 
     let mut head = Vector::zero();
     let mut tail = Vector::zero();
 
-    grid.add(head, Both, true);
+    grid.add(head, ALL__, true);
 
     let moves = parse_input(input);
     for Move { direction, steps } in moves {
         let delta = Vector::from(direction);
         for _ in 0..steps {
             let to = head + delta;
-            move_piece(&mut grid, Head, head, to, false);
+            move_piece(&mut grid, HEAD_, head, to, false);
             head = to;
-            tail = update_tail(&mut grid, tail, head);
+            tail = update_piece(&mut grid, TAIL_, tail, head, true);
         }
     }
     println!("{grid:?}");
