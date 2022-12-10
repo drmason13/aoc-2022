@@ -7,6 +7,8 @@ use std::{
     thread::{self, JoinHandle},
 };
 
+pub mod types_2d;
+
 /// Generic error for when the value of something is wrong
 ///
 /// Fine for simple parsing of types from Strings

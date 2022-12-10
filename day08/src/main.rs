@@ -4,9 +4,10 @@ use std::{
     sync::{mpsc, Arc},
 };
 
-use itertools::Itertools;
-
-use shared::{receive_answers, run_part_threaded};
+use shared::{
+    receive_answers, run_part_threaded,
+    types_2d::{iter_coords, Coords, Direction, Size},
+};
 
 struct HeightMap {
     heights: Vec<Vec<u32>>,
@@ -20,8 +21,11 @@ impl HeightMap {
             .copied()
     }
 
-    fn dimensions(&self) -> (usize, usize) {
-        (self.heights[0].len(), self.heights.len())
+    fn dimensions(&self) -> Size {
+        Size {
+            width: self.heights[0].len(),
+            height: self.heights.len(),
+        }
     }
 }
 
@@ -52,20 +56,6 @@ struct HeightMapVisibleIter<'a> {
     vision_blocked: bool,
 }
 
-#[derive(Clone, Copy, Debug)]
-struct Coords {
-    x: usize,
-    y: usize,
-}
-
-#[derive(Clone, Copy, Debug)]
-enum Direction {
-    North,
-    East,
-    South,
-    West,
-}
-
 impl HeightMap {
     /// iter each height between the height at the given coords and the edge in the given direction
     fn heights_from_point(&self, coords: Coords, direction: Direction) -> HeightMapIter {
@@ -94,10 +84,7 @@ impl HeightMap {
 
     /// iter every Coord from left to right and top to bottom
     fn iter_coords(&self) -> impl Iterator<Item = Coords> {
-        let (width, depth) = self.dimensions();
-        (0..width)
-            .cartesian_product(0..depth)
-            .map(|(x, y)| Coords { x, y })
+        iter_coords(&self.dimensions())
     }
 }
 
@@ -106,25 +93,25 @@ impl<'a> Iterator for HeightMapIter<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.direction {
-            Direction::North => {
+            Direction::Up => {
                 self.coords.y = match self.coords.y.checked_sub(1) {
                     Some(n) => n,
                     None => return None,
                 }
             }
-            Direction::East => {
+            Direction::Right => {
                 self.coords.x = match self.coords.x.checked_add(1) {
                     Some(n) => n,
                     None => return None,
                 }
             }
-            Direction::South => {
+            Direction::Down => {
                 self.coords.y = match self.coords.y.checked_add(1) {
                     Some(n) => n,
                     None => return None,
                 }
             }
-            Direction::West => {
+            Direction::Left => {
                 self.coords.x = match self.coords.x.checked_sub(1) {
                     Some(n) => n,
                     None => return None,
@@ -146,25 +133,25 @@ impl<'a> Iterator for HeightMapVisibleIter<'a> {
             return None;
         }
         match self.direction {
-            Direction::North => {
+            Direction::Up => {
                 self.coords.y = match self.coords.y.checked_sub(1) {
                     Some(n) => n,
                     None => return None,
                 }
             }
-            Direction::East => {
+            Direction::Right => {
                 self.coords.x = match self.coords.x.checked_add(1) {
                     Some(n) => n,
                     None => return None,
                 }
             }
-            Direction::South => {
+            Direction::Down => {
                 self.coords.y = match self.coords.y.checked_add(1) {
                     Some(n) => n,
                     None => return None,
                 }
             }
-            Direction::West => {
+            Direction::Left => {
                 self.coords.x = match self.coords.x.checked_sub(1) {
                     Some(n) => n,
                     None => return None,
@@ -217,16 +204,16 @@ fn part1(input: &str) -> usize {
         .filter(|coords| {
             let this_tree = trees.get(*coords).expect("get tree");
             trees
-                .heights_from_point(*coords, North)
+                .heights_from_point(*coords, Up)
                 .all(|height| height < this_tree)
                 || trees
-                    .heights_from_point(*coords, East)
+                    .heights_from_point(*coords, Right)
                     .all(|height| height < this_tree)
                 || trees
-                    .heights_from_point(*coords, South)
+                    .heights_from_point(*coords, Down)
                     .all(|height| height < this_tree)
                 || trees
-                    .heights_from_point(*coords, West)
+                    .heights_from_point(*coords, Left)
                     .all(|height| height < this_tree)
         })
         .count()
@@ -238,10 +225,10 @@ fn part2(input: &str) -> usize {
     trees
         .iter_coords()
         .map(|coords| {
-            trees.visible_heights_from_point(coords, North).count()
-                * trees.visible_heights_from_point(coords, East).count()
-                * trees.visible_heights_from_point(coords, South).count()
-                * trees.visible_heights_from_point(coords, West).count()
+            trees.visible_heights_from_point(coords, Up).count()
+                * trees.visible_heights_from_point(coords, Right).count()
+                * trees.visible_heights_from_point(coords, Down).count()
+                * trees.visible_heights_from_point(coords, Left).count()
         })
         .max()
         .unwrap()
