@@ -1,6 +1,5 @@
 use std::{
     fmt,
-    ops::BitAnd,
     str::FromStr,
     sync::{mpsc, Arc},
 };
@@ -59,18 +58,21 @@ impl FromStr for Move {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Piece(u16);
 
-const HEAD_: Piece = Piece(0b10000000000);
-const ONE__: Piece = Piece(0b01000000000);
-const TWO__: Piece = Piece(0b00100000000);
-const THREE: Piece = Piece(0b00010000000);
-const FOUR_: Piece = Piece(0b00001000000);
-const FIVE_: Piece = Piece(0b00000100000);
-const SIX__: Piece = Piece(0b00000010000);
-const SEVEN: Piece = Piece(0b00000001000);
-const EIGHT: Piece = Piece(0b00000000100);
-const NINE_: Piece = Piece(0b00000000010);
-const TAIL_: Piece = Piece(0b00000000001);
-const ALL__: Piece = Piece(0b11111111111);
+const HEAD_: Piece = Piece(0b1000000000);
+const ONE__: Piece = Piece(0b0100000000);
+const TWO__: Piece = Piece(0b0010000000);
+const THREE: Piece = Piece(0b0001000000);
+const FOUR_: Piece = Piece(0b0000100000);
+const FIVE_: Piece = Piece(0b0000010000);
+const SIX__: Piece = Piece(0b0000001000);
+const SEVEN: Piece = Piece(0b0000000100);
+const EIGHT: Piece = Piece(0b0000000010);
+const TAIL_: Piece = Piece(0b0000000001);
+const ALL__: Piece = Piece(0b1111111111);
+
+const PIECES: [Piece; 10] = [
+    HEAD_, ONE__, TWO__, THREE, FOUR_, FIVE_, SIX__, SEVEN, EIGHT, TAIL_,
+];
 
 impl Piece {
     fn contains(&self, other: Piece) -> bool {
@@ -92,17 +94,16 @@ impl fmt::Debug for Piece {
             f,
             "{}",
             match self.0 {
-                0b10000000000 => "H",
-                0b01000000000 => "1",
-                0b00100000000 => "2",
-                0b00010000000 => "3",
-                0b00001000000 => "4",
-                0b00000100000 => "5",
-                0b00000010000 => "6",
-                0b00000001000 => "7",
-                0b00000000100 => "8",
-                0b00000000010 => "9",
-                0b00000000001 => "T",
+                0b1000000000 => "H",
+                0b0100000000 => "1",
+                0b0010000000 => "2",
+                0b0001000000 => "3",
+                0b0000100000 => "4",
+                0b0000010000 => "5",
+                0b0000001000 => "6",
+                0b0000000100 => "7",
+                0b0000000010 => "8",
+                0b0000000001 => "T",
                 // multiple pieces
                 _ => "@",
             }
@@ -123,31 +124,31 @@ fn update_piece(
         // positive dx
         (dx, dy) if dx > 1 => match dy {
             0 => Vector::new(1, 0),
-            1 => Vector::new(1, 1),
-            -1 => Vector::new(1, -1),
-            _ => panic!("follower fell behind"),
+            1 | 2 => Vector::new(1, 1),
+            -1 | -2 => Vector::new(1, -1),
+            _ => panic!("follower fell behind\nGrid:\n{grid:?}"),
         },
         // negative dx
         (dx, dy) if dx < -1 => match dy {
             0 => Vector::new(-1, 0),
-            1 => Vector::new(-1, 1),
-            -1 => Vector::new(-1, -1),
-            _ => panic!("follower fell behind"),
+            1 | 2 => Vector::new(-1, 1),
+            -1 | -2 => Vector::new(-1, -1),
+            _ => panic!("follower fell behind\nGrid:\n{grid:?}"),
         },
 
         // positive dy
         (dx, dy) if dy > 1 => match dx {
             0 => Vector::new(0, 1),
-            1 => Vector::new(1, 1),
-            -1 => Vector::new(-1, 1),
-            _ => panic!("follower fell behind"),
+            1 | 2 => Vector::new(1, 1),
+            -1 | -2 => Vector::new(-1, 1),
+            _ => panic!("follower fell behind\nGrid:\n{grid:?}"),
         },
         // negative dy
         (dx, dy) if dy < -1 => match dx {
             0 => Vector::new(0, -1),
-            1 => Vector::new(1, -1),
-            -1 => Vector::new(-1, -1),
-            _ => panic!("follower fell behind"),
+            1 | 2 => Vector::new(1, -1),
+            -1 | -2 => Vector::new(-1, -1),
+            _ => panic!("follower fell behind\nGrid:\n{grid:?}"),
         },
         _ => return follower,
     };
@@ -235,8 +236,35 @@ fn part1(input: &str) -> usize {
     grid.visited().count()
 }
 
-fn part2(_input: &str) -> usize {
-    todo!()
+fn part2(input: &str) -> usize {
+    let mut grid: InfGrid<Piece> = InfGrid::new();
+
+    let mut positions = [Vector::zero(); 10];
+
+    grid.add(positions[0], ALL__, true);
+
+    let moves = parse_input(input);
+    for Move { direction, steps } in moves {
+        let delta = Vector::from(direction);
+        for _ in 0..steps {
+            // move head
+            let to = positions[0] + delta;
+            move_piece(&mut grid, HEAD_, positions[0], to, false);
+            positions[0] = to;
+
+            // update the middle pieces
+            for i in 1..9 {
+                positions[i] =
+                    update_piece(&mut grid, PIECES[i], positions[i], positions[i - 1], false);
+            }
+
+            // update the tail, visiting as it goes
+            positions[9] = update_piece(&mut grid, TAIL_, positions[9], positions[8], true);
+        }
+    }
+    println!("{grid:?}");
+
+    grid.visited().count()
 }
 
 #[cfg(test)]
@@ -252,6 +280,15 @@ D 1
 L 5
 R 2";
 
+    const LARGER_INPUT: &str = r"R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20";
+
     #[test]
     fn test_part1() {
         assert_eq!(part1(INPUT), 13);
@@ -259,6 +296,7 @@ R 2";
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(INPUT), 8);
+        assert_eq!(part2(INPUT), 1);
+        assert_eq!(part2(LARGER_INPUT), 36);
     }
 }
