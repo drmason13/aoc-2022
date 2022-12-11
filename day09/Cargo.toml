@@ -5,5 +5,5 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-shared = { path = "../shared" }
+shared = { path = "../shared", features = ["types_2d"] }
 day08 = { version = "0.1.0", path = "../day08" }

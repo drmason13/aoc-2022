@@ -7,6 +7,9 @@ use std::{
     thread::{self, JoinHandle},
 };
 
+#[cfg(feature = "parsing")]
+pub mod parsers;
+#[cfg(feature = "types_2d")]
 pub mod types_2d;
 
 /// Generic error for when the value of something is wrong

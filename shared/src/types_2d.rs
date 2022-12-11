@@ -4,7 +4,6 @@ use std::{
     ops::{Add, Mul, MulAssign, Sub},
 };
 
-#[cfg(feature = "itertools")]
 use itertools::Itertools;
 
 #[derive(Clone, Copy, Debug)]
@@ -27,7 +26,6 @@ impl Coords {
     }
 }
 
-#[cfg(feature = "itertools")]
 /// iter every Coord from left to right and top to bottom: (0, 0) is first and represents the top left
 pub fn iter_coords(dimensions: &Size) -> impl Iterator<Item = Coords> {
     (0..dimensions.width)
@@ -35,7 +33,6 @@ pub fn iter_coords(dimensions: &Size) -> impl Iterator<Item = Coords> {
         .map(|(x, y)| Coords { x, y })
 }
 
-#[cfg(feature = "itertools")]
 /// iter every position Vector from left to right and top to bottom: (0, 0) is first and represents the top left
 pub fn iter_positions(top_left: &Vector, bottom_right: &Vector) -> impl Iterator<Item = Vector> {
     (top_left.y..=bottom_right.y)
@@ -307,7 +304,6 @@ impl<T> InfGrid<T> {
         }
     }
 
-    #[cfg(feature = "itertools")]
     /// iter every Coord from left to right and top to bottom
     pub fn positions(&self) -> impl Iterator<Item = Vector> {
         iter_positions(&self.top_left, &self.bottom_right)
