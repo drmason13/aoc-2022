@@ -1,17 +1,84 @@
 use std::{
     collections::HashMap,
     fmt,
+    iter::FusedIterator,
     ops::{Add, Mul, MulAssign, Sub},
 };
 
 use itertools::Itertools;
 
-#[derive(Clone, Copy, Debug)]
+use Direction::*;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Direction {
     Up,
     Down,
     Left,
     Right,
+}
+
+impl Direction {
+    fn turn_clockwise(&self) -> Self {
+        match self {
+            Up => Right,
+            Right => Down,
+            Down => Left,
+            Left => Up,
+        }
+    }
+
+    fn turn_anticlockwise(&self) -> Self {
+        match self {
+            Up => Left,
+            Left => Down,
+            Down => Right,
+            Right => Up,
+        }
+    }
+}
+
+pub fn directions_clockwise(start: Direction) -> Directions {
+    Directions {
+        count: 4,
+        current: start,
+        clockwise: true,
+    }
+}
+
+pub fn directions_anticlockwise(start: Direction) -> Directions {
+    Directions {
+        count: 4,
+        current: start,
+        clockwise: false,
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct Directions {
+    count: u8,
+    current: Direction,
+    clockwise: bool,
+}
+
+impl Iterator for Directions {
+    type Item = Direction;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.count == 0 {
+            return None;
+        } else {
+            self.count -= 1;
+        }
+
+        let ret = Some(self.current);
+
+        if self.clockwise {
+            self.current = self.current.turn_clockwise();
+        } else {
+            self.current = self.current.turn_anticlockwise();
+        }
+        ret
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -23,6 +90,10 @@ pub struct Coords {
 impl Coords {
     pub fn zero() -> Self {
         Coords { x: 0, y: 0 }
+    }
+
+    pub fn new(x: usize, y: usize) -> Self {
+        Coords { x, y }
     }
 }
 
@@ -61,7 +132,6 @@ impl Vector {
 
 impl From<Direction> for Vector {
     fn from(direction: Direction) -> Self {
-        use Direction::*;
         match direction {
             Up => Vector { x: 0, y: -1 },
             Down => Vector { x: 0, y: 1 },
@@ -129,7 +199,7 @@ impl TryFrom<Vector> for Coords {
 }
 
 /// the negative coords one or both of x, y are negative
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct OutOfBounds(Vector);
 
 impl Add<Vector> for Coords {
@@ -167,7 +237,7 @@ impl Sub<Coords> for Coords {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Size {
     pub width: usize,
     pub height: usize,
@@ -206,7 +276,7 @@ impl From<Coords> for Size {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GridCell<T> {
     pub value: Option<T>,
     pub visited: bool,
@@ -230,6 +300,7 @@ impl<T> GridCell<T> {
     }
 }
 
+#[derive(Clone, Eq, PartialEq)]
 pub struct InfGrid<T> {
     cells: HashMap<Vector, GridCell<T>>,
     top_left: Vector,
@@ -321,6 +392,89 @@ impl<T> Default for InfGrid<T> {
         Self::new()
     }
 }
+
+#[derive(Clone)]
+pub struct Grid<T> {
+    pub cells: Vec<Vec<T>>,
+}
+
+impl<T: fmt::Display> fmt::Debug for Grid<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for row in self.cells.iter() {
+            for height in row {
+                write!(f, "{}", height)?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
+impl<T> Grid<T> {
+    pub fn new(cells: Vec<Vec<T>>) -> Self {
+        Grid { cells }
+    }
+
+    pub fn get(&self, index: Coords) -> Option<&T> {
+        self.cells.get(index.y).and_then(|row| row.get(index.x))
+    }
+
+    pub fn get_mut(&mut self, index: Coords) -> Option<&mut T> {
+        self.cells
+            .get_mut(index.y)
+            .and_then(|row| row.get_mut(index.x))
+    }
+
+    pub fn neighbours(&self, coords: Coords) -> NeighbourIter {
+        NeighbourIter {
+            inner: Box::new(directions_clockwise(Up).filter_map(move |dir| {
+                (coords + Vector::from(dir)).ok().and_then(|c| {
+                    // check these coords actually index into the grid
+                    if self.get(c).is_some() {
+                        Some(c)
+                    } else {
+                        None
+                    }
+                })
+            })),
+        }
+    }
+
+    pub fn dimensions(&self) -> Size {
+        Size {
+            width: self.cells[0].len(),
+            height: self.cells.len(),
+        }
+    }
+
+    /// iter every Coord from left to right and top to bottom
+    pub fn iter_coords(&self) -> impl Iterator<Item = Coords> {
+        iter_coords(&self.dimensions())
+    }
+}
+
+/// This struct is returned by the neighbours method of [`Grid`]
+pub struct NeighbourIter<'a> {
+    inner: Box<dyn Iterator<Item = Coords> + 'a>,
+}
+
+impl<'a> NeighbourIter<'a> {
+    pub fn new<T: Iterator<Item = Coords> + 'a>(inner: T) -> Self {
+        NeighbourIter {
+            inner: Box::new(inner),
+        }
+    }
+}
+
+impl<'a> Iterator for NeighbourIter<'a> {
+    type Item = Coords;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
+    }
+}
+
+impl<'a> FusedIterator for NeighbourIter<'a> {}
 
 #[cfg(test)]
 mod tests {
