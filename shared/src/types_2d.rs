@@ -2,12 +2,14 @@ use std::{
     collections::HashMap,
     fmt,
     iter::FusedIterator,
-    ops::{Add, Mul, MulAssign, Sub},
+    ops::{Add, AddAssign, Mul, MulAssign, Sub},
 };
 
-use itertools::Itertools;
+pub use itertools::Itertools;
 
 use Direction::*;
+
+use crate::arithmetic::gcd;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Direction {
@@ -95,6 +97,63 @@ impl Coords {
     pub fn new(x: usize, y: usize) -> Self {
         Coords { x, y }
     }
+
+    pub fn outside_of(&self, bounds: Size, offset: Coords) -> bool {
+        // < 0 is impossible for coords so no point checking
+        self.x > bounds.width + offset.x || self.y > bounds.height + offset.y
+    }
+
+    pub fn points_between(&self, end: &Coords) -> impl Iterator<Item = Coords> {
+        let vector = Vector::new(
+            end.x as isize - self.x as isize,
+            end.y as isize - self.y as isize,
+        )
+        .simplify();
+
+        PointsBetween {
+            current: *self,
+            end: *end,
+            vector,
+        }
+    }
+
+    /// includes self and end in the iterator
+    pub fn points_between_inclusive(&self, end: &Coords) -> impl Iterator<Item = Coords> {
+        let vector = Vector::new(
+            end.x as isize - self.x as isize,
+            end.y as isize - self.y as isize,
+        )
+        .simplify();
+
+        std::iter::once(*self)
+            .chain(PointsBetween {
+                current: *self,
+                end: *end,
+                vector,
+            })
+            .chain(std::iter::once(*end))
+    }
+}
+
+pub struct PointsBetween {
+    current: Coords,
+    end: Coords,
+    vector: Vector,
+}
+
+impl Iterator for PointsBetween {
+    type Item = Coords;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current == self.end {
+            None
+        } else {
+            let next = (self.current + self.vector)
+                .expect("points between Coords should not be out of bounds");
+            self.current = next;
+            Some(self.current)
+        }
+    }
 }
 
 /// iter every Coord from left to right and top to bottom: (0, 0) is first and represents the top left
@@ -125,8 +184,27 @@ impl Vector {
     pub fn new(x: isize, y: isize) -> Self {
         Vector { x, y }
     }
+
     pub fn zero() -> Self {
         Vector { x: 0, y: 0 }
+    }
+
+    /// return the smallest vector that points in the same direction
+    pub fn simplify(self) -> Self {
+        match self {
+            Vector { x, y: 0 } if x > 0 => Vector { x: 1, y: 0 },
+            Vector { x: 0, y } if y > 0 => Vector { x: 0, y: 1 },
+            Vector { x, y: 0 } if x < 0 => Vector { x: -1, y: 0 },
+            Vector { x: 0, y } if y < 0 => Vector { x: 0, y: -1 },
+            Vector { x: 0, y: 0 } => Vector { x: 0, y: 0 },
+            Vector { x, y } => {
+                let factor = gcd(modulus(x), modulus(y)) as isize;
+                Vector {
+                    x: self.x / factor,
+                    y: self.y / factor,
+                }
+            }
+        }
     }
 }
 
@@ -200,7 +278,7 @@ impl TryFrom<Vector> for Coords {
 
 /// the negative coords one or both of x, y are negative
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct OutOfBounds(Vector);
+pub struct OutOfBounds(pub Vector);
 
 impl Add<Vector> for Coords {
     type Output = Result<Coords, OutOfBounds>;
@@ -234,6 +312,13 @@ impl Sub<Coords> for Coords {
         let x = self.x as isize - rhs.x as isize;
         let y = self.y as isize - rhs.y as isize;
         Vector { x, y }
+    }
+}
+
+impl AddAssign<Coords> for Coords {
+    fn add_assign(&mut self, rhs: Coords) {
+        self.x += rhs.x;
+        self.y += rhs.y;
     }
 }
 
@@ -345,6 +430,14 @@ impl<T> InfGrid<T> {
         }
     }
 
+    pub fn new_off_center(center: Coords) -> Self {
+        InfGrid {
+            cells: HashMap::new(),
+            top_left: Vector::from(center),
+            bottom_right: Vector::from(center),
+        }
+    }
+
     pub fn get(&self, position: Vector) -> Option<&GridCell<T>> {
         self.cells.get(&position)
     }
@@ -378,6 +471,21 @@ impl<T> InfGrid<T> {
     /// iter every Coord from left to right and top to bottom
     pub fn positions(&self) -> impl Iterator<Item = Vector> {
         iter_positions(&self.top_left, &self.bottom_right)
+    }
+
+    pub fn bounds(&self) -> Size {
+        let width = modulus(self.bottom_right.x - self.top_left.x) + 1; // counting is hard!
+        let height = modulus(self.bottom_right.y - self.top_left.y) + 1;
+        Size { width, height }
+    }
+
+    /// the offset is the top_left of the grid
+    pub fn offset(&self) -> Vector {
+        self.top_left
+    }
+
+    pub fn count_visited(&self) -> usize {
+        self.cells.values().filter(|cell| cell.visited).count()
     }
 }
 

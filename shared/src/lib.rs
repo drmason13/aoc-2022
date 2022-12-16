@@ -7,6 +7,7 @@ use std::{
     thread::{self, JoinHandle},
 };
 
+pub mod arithmetic;
 #[cfg(feature = "parsing")]
 pub mod parsers;
 #[cfg(feature = "types_2d")]

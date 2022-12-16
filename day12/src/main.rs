@@ -201,7 +201,7 @@ abdefghi";
 
     #[test]
     fn test_reverse_height_neighbours() {
-        let height_map = ReversePathHeightMap(dbg!(parse_input(INPUT)));
+        let height_map = ReversePathHeightMap(parse_input(INPUT));
         let mut neighbours = height_map.neighbours(Coords { x: 0, y: 0 });
         assert_eq!(neighbours.next().unwrap(), Coords { x: 1, y: 0 });
         assert_eq!(neighbours.next().unwrap(), Coords { x: 0, y: 1 });
