@@ -47,7 +47,8 @@ fn part1(input: &str) -> Answer {
     let mut sand = FallingSand::new(source);
     while let Ok(position) = sand.fall(&map) {
         // the sand will fall until it rests somewhere in the map (or error if it goes out of bounds)
-        map.add_sand(position);
+        map.add_sand(position)
+            .expect("should not reach as high as source in part1");
         sand = FallingSand::new(source);
     }
     println!("{:?}", map);
@@ -57,15 +58,18 @@ fn part1(input: &str) -> Answer {
 fn part2(input: &str) -> Answer {
     let source = Coords::new(500, 0);
     let mut map = parse_input(input, source);
-    // expand the bounds to include the floor
-    map.bounds.height += 2;
+
+    map.add_floor(source);
 
     let mut sand = FallingSand::new(source);
     while let Ok(position) = sand.fall(&map) {
-        map.add_sand(position);
-        sand = FallingSand::new(source);
+        match map.add_sand(position) {
+            Ok(_) => sand = FallingSand::new(source),
+            Err(_) => break,
+        }
     }
-    map.count_resting_sand()
+    println!("{:?}", map);
+    map.count_resting_sand() + 1 // for the unit of sand at the source
 }
 
 #[cfg(test)]
@@ -82,31 +86,36 @@ mod test {
         let mut sand = FallingSand::new(source);
         let position = sand.fall(&map).expect("test");
 
-        map.add_sand(position);
+        map.add_sand(position)
+            .expect("sand should not reach source");
         assert_eq!(position, Coords::new(500, 8));
         assert_eq!(map.count_resting_sand(), 1);
 
         let mut sand = FallingSand::new(source);
         let position = sand.fall(&map).expect("test");
-        map.add_sand(position);
+        map.add_sand(position)
+            .expect("sand should not reach source");
         assert_eq!(position, Coords::new(499, 8));
         assert_eq!(map.count_resting_sand(), 2);
 
         let mut sand = FallingSand::new(source);
         let position = sand.fall(&map).expect("test");
-        map.add_sand(position);
+        map.add_sand(position)
+            .expect("sand should not reach source");
         assert_eq!(position, Coords::new(501, 8));
         assert_eq!(map.count_resting_sand(), 3);
 
         let mut sand = FallingSand::new(source);
         let position = sand.fall(&map).expect("test");
-        map.add_sand(position);
+        map.add_sand(position)
+            .expect("sand should not reach source");
         assert_eq!(position, Coords::new(500, 7));
         assert_eq!(map.count_resting_sand(), 4);
 
         let mut sand = FallingSand::new(source);
         let position = sand.fall(&map).expect("test");
-        map.add_sand(position);
+        map.add_sand(position)
+            .expect("sand should not reach source");
         assert_eq!(position, Coords::new(498, 8));
         assert_eq!(map.count_resting_sand(), 5);
     }
@@ -118,7 +127,6 @@ mod test {
 
     #[test]
     fn test_part2() {
-        todo!()
-        // assert_eq!(part2(INPUT), );
+        assert_eq!(part2(INPUT), 93);
     }
 }

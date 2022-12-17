@@ -40,8 +40,14 @@ impl Map {
         self.grid.add(Vector::from(position), Source, false);
     }
 
-    pub fn add_sand(&mut self, position: Coords) {
-        self.grid.add(Vector::from(position), Sand, true);
+    pub fn add_sand(&mut self, position: Coords) -> Result<(), OutOfBounds> {
+        if let Ok(Some(Source)) = self.get(position) {
+            // declare "out of bounds" if we reach the source of the sound to terminate the sand adding loop in part 2
+            Err(OutOfBounds(Vector::from(position)))
+        } else {
+            self.grid.add(Vector::from(position), Sand, true);
+            Ok(())
+        }
     }
 
     pub fn add_rock_seam(&mut self, corners: Vec<Coords>) {
@@ -55,6 +61,16 @@ impl Map {
         for point in start.points_between_inclusive(end) {
             self.grid.add(Vector::from(point), Rock, false)
         }
+    }
+
+    /// add the "infinite" floor by placing a rock seam 2 below the height of the map, stretching across what is hopefully far enough
+    pub fn add_floor(&mut self, source: Coords) {
+        let new_height = self.bounds.height + 1;
+        let start = Coords::new(source.x - new_height, new_height);
+        let end = Coords::new(source.x + new_height, new_height);
+
+        self.add_rock_line_segment(&start, &end);
+        self.bounds = self.grid.bounds();
     }
 
     pub fn count_resting_sand(&self) -> usize {
