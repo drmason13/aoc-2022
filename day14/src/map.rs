@@ -21,7 +21,7 @@ impl Map {
         }
         map.add_source(source);
 
-        map.bounds = map.grid.bounds();
+        map.bounds = map.grid.bounds_size();
         map
     }
 
@@ -70,7 +70,7 @@ impl Map {
         let end = Coords::new(source.x + new_height, new_height);
 
         self.add_rock_line_segment(&start, &end);
-        self.bounds = self.grid.bounds();
+        self.bounds = self.grid.bounds_size();
     }
 
     pub fn count_resting_sand(&self) -> usize {

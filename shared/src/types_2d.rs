@@ -133,6 +133,10 @@ impl Coords {
             })
             .chain(std::iter::once(*end))
     }
+
+    pub fn manhattan_distance(&self, other: Coords) -> usize {
+        modulus(other.x as isize - self.x as isize) + modulus(other.y as isize - self.y as isize)
+    }
 }
 
 pub struct PointsBetween {
@@ -161,6 +165,13 @@ pub fn iter_coords(dimensions: &Size) -> impl Iterator<Item = Coords> {
     (0..dimensions.width)
         .cartesian_product(0..dimensions.height)
         .map(|(x, y)| Coords { x, y })
+}
+
+/// iter every Vector from left to right and top to bottom
+pub fn iter_vectors(top_left: Vector, bottom_right: Vector) -> impl Iterator<Item = Vector> {
+    (top_left.x..bottom_right.x)
+        .cartesian_product(top_left.y..bottom_right.y)
+        .map(|(x, y)| Vector { x, y })
 }
 
 /// iter every position Vector from left to right and top to bottom: (0, 0) is first and represents the top left
@@ -205,6 +216,10 @@ impl Vector {
                 }
             }
         }
+    }
+
+    pub fn manhattan_distance(&self, other: Vector) -> usize {
+        modulus(other.x - self.x) + modulus(other.y - self.y)
     }
 }
 
@@ -323,6 +338,12 @@ impl AddAssign<Coords> for Coords {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct Bounds {
+    pub top_left: Vector,
+    pub bottom_right: Vector,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Size {
     pub width: usize,
     pub height: usize,
@@ -388,8 +409,8 @@ impl<T> GridCell<T> {
 #[derive(Clone, Eq, PartialEq)]
 pub struct InfGrid<T> {
     cells: HashMap<Vector, GridCell<T>>,
-    top_left: Vector,
-    bottom_right: Vector,
+    pub top_left: Vector,
+    pub bottom_right: Vector,
 }
 
 impl<T: fmt::Debug> fmt::Debug for InfGrid<T> {
@@ -468,12 +489,29 @@ impl<T> InfGrid<T> {
         }
     }
 
+    pub fn add_skip_bounds(&mut self, position: Vector, value: T, visited: bool) {
+        self.cells.insert(
+            position,
+            GridCell {
+                value: Some(value),
+                visited,
+            },
+        );
+    }
+
     /// iter every Coord from left to right and top to bottom
     pub fn positions(&self) -> impl Iterator<Item = Vector> {
         iter_positions(&self.top_left, &self.bottom_right)
     }
 
-    pub fn bounds(&self) -> Size {
+    pub fn bounds(&self) -> Bounds {
+        Bounds {
+            top_left: self.top_left,
+            bottom_right: self.bottom_right,
+        }
+    }
+
+    pub fn bounds_size(&self) -> Size {
         let width = modulus(self.bottom_right.x - self.top_left.x) + 1; // counting is hard!
         let height = modulus(self.bottom_right.y - self.top_left.y) + 1;
         Size { width, height }
@@ -486,6 +524,10 @@ impl<T> InfGrid<T> {
 
     pub fn count_visited(&self) -> usize {
         self.cells.values().filter(|cell| cell.visited).count()
+    }
+
+    pub fn cells(&self) -> impl Iterator<Item = &GridCell<T>> {
+        self.cells.values()
     }
 }
 

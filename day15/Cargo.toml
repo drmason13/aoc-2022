@@ -1,0 +1,9 @@
+[package]
+name = "day15"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+regex = "1.7.0"
+shared = { path = "../shared", features = ["types_2d"] }

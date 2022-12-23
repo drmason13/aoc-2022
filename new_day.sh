@@ -13,3 +13,4 @@ sed -i "$DAY/Cargo.toml" -e "s/day01/$DAY/"
 cp day01/src/main.rs "$DAY/src/main.rs"
 sed -i "$DAY/src/main.rs" -e "s/day1/$DAY/"
 
+cargo advent --day $1
