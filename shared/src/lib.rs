@@ -75,5 +75,5 @@ pub fn receive_answers<A: Send + fmt::Display>(rx: Receiver<Msg<A>>) {
 }
 
 pub fn read_input(year: u16, day: u8) -> String {
-    std::fs::read_to_string(format!("./{year}/input/day{day}.txt")).expect("failed to read input")
+    std::fs::read_to_string(format!("./input/{year}/day{day}.txt")).expect("failed to read input")
 }
