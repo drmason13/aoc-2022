@@ -179,10 +179,7 @@ pub fn iter_positions(top_left: &Vector, bottom_right: &Vector) -> impl Iterator
     (top_left.y..=bottom_right.y)
         .cartesian_product(top_left.x..=bottom_right.x)
         // to order left-right, top bottom this ordering works out
-        .map(|(y, x)| Vector {
-            x: x as isize,
-            y: y as isize,
-        })
+        .map(|(y, x)| Vector { x, y })
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -299,8 +296,8 @@ impl Add<Vector> for Coords {
     type Output = Result<Coords, OutOfBounds>;
 
     fn add(self, rhs: Vector) -> Self::Output {
-        let x = self.x as isize + rhs.x as isize;
-        let y = self.y as isize + rhs.y as isize;
+        let x = self.x as isize + rhs.x;
+        let y = self.y as isize + rhs.y;
 
         if x < 0 || y < 0 {
             Err(OutOfBounds(Vector { x, y }))

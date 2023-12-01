@@ -12,27 +12,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "autocfg"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
-
-[[package]]
-name = "day01"
+name = "aoc-2022-day01"
 version = "0.1.0"
 dependencies = [
  "shared",
 ]
 
 [[package]]
-name = "day02"
+name = "aoc-2022-day02"
 version = "0.1.0"
 dependencies = [
  "shared",
 ]
 
 [[package]]
-name = "day03"
+name = "aoc-2022-day03"
 version = "0.1.0"
 dependencies = [
  "itertools",
@@ -40,14 +34,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "day04"
+name = "aoc-2022-day04"
 version = "0.1.0"
 dependencies = [
  "shared",
 ]
 
 [[package]]
-name = "day05"
+name = "aoc-2022-day05"
 version = "0.1.0"
 dependencies = [
  "once_cell",
@@ -56,21 +50,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "day06"
+name = "aoc-2022-day06"
 version = "0.1.0"
 dependencies = [
  "shared",
 ]
 
 [[package]]
-name = "day07"
+name = "aoc-2022-day07"
 version = "0.1.0"
 dependencies = [
  "shared",
 ]
 
 [[package]]
-name = "day08"
+name = "aoc-2022-day08"
 version = "0.1.0"
 dependencies = [
  "itertools",
@@ -78,22 +72,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "day09"
-version = "0.1.0"
-dependencies = [
- "day08",
- "shared",
-]
-
-[[package]]
-name = "day10"
+name = "aoc-2022-day09"
 version = "0.1.0"
 dependencies = [
  "shared",
 ]
 
 [[package]]
-name = "day11"
+name = "aoc-2022-day10"
+version = "0.1.0"
+dependencies = [
+ "shared",
+]
+
+[[package]]
+name = "aoc-2022-day11"
 version = "0.1.0"
 dependencies = [
  "num-bigint",
@@ -102,14 +95,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "day12"
+name = "aoc-2022-day12"
 version = "0.1.0"
 dependencies = [
  "shared",
 ]
 
 [[package]]
-name = "day13"
+name = "aoc-2022-day13"
 version = "0.1.0"
 dependencies = [
  "serde",
@@ -118,19 +111,33 @@ dependencies = [
 ]
 
 [[package]]
-name = "day14"
+name = "aoc-2022-day14"
 version = "0.1.0"
 dependencies = [
  "shared",
 ]
 
 [[package]]
-name = "day15"
+name = "aoc-2022-day15"
 version = "0.1.0"
 dependencies = [
  "regex",
  "shared",
 ]
+
+[[package]]
+name = "aoc-2022-day16"
+version = "0.1.0"
+dependencies = [
+ "regex",
+ "shared",
+]
+
+[[package]]
+name = "autocfg"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "either"

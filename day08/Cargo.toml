@@ -1,9 +1,0 @@
-[package]
-name = "day08"
-authors.workspace = true
-version.workspace = true
-edition.workspace = true
-
-[dependencies]
-itertools = "0.10.5"
-shared = { path = "../shared", features = ["types_2d"] }

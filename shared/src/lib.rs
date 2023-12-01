@@ -10,6 +10,8 @@ use std::{
 pub mod arithmetic;
 #[cfg(feature = "parsing")]
 pub mod parsers;
+#[cfg(feature = "pathfinding")]
+pub mod pathfinding;
 #[cfg(feature = "types_2d")]
 pub mod types_2d;
 
@@ -70,4 +72,8 @@ pub fn receive_answers<A: Send + fmt::Display>(rx: Receiver<Msg<A>>) {
     {
         println!("Got {} for part {}", answer, part);
     }
+}
+
+pub fn read_input(year: u16, day: u8) -> String {
+    std::fs::read_to_string(format!("./{year}/input/day{day}.txt")).expect("failed to read input")
 }

@@ -10,3 +10,4 @@ optional = true
 [features]
 default = []
 types_2d = ["dep:itertools"]
+pathfinding = []

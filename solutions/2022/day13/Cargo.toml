@@ -1,0 +1,10 @@
+[package]
+name = "aoc-2022-day13"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde = { version = "1.0.150", features = ["serde_derive"] }
+serde_json = "1.0.89"
+shared = { path = "../../../shared" }

@@ -1,5 +1,6 @@
 [workspace]
-members = ["shared", "day*"]
+members = ["shared", "solutions/*/day*"]
+resolver = "2"
 
 [workspace.package]
 authors = ["drmason13"]

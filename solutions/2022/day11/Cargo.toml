@@ -1,0 +1,10 @@
+[package]
+name = "aoc-2022-day11"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+num-bigint = "0.4.3"
+num-traits = "0.2.15"
+shared = { path = "../../../shared" }
