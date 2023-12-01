@@ -1,10 +1,6 @@
-use std::{
-    fmt::Write,
-    fs,
-    sync::{mpsc, Arc},
-};
+use std::sync::{mpsc, Arc};
 
-use regex_lite::{Captures, Regex};
+use aoc_2023_day01::{concat_digits, first_digit, last_digit, replace_number_words_with_digits};
 use shared::{read_input, receive_answers, run_part_threaded};
 
 type Answer = u32;
@@ -18,38 +14,6 @@ fn main() {
     run_part_threaded(2, shared_input, part2, tx);
 
     receive_answers(rx);
-}
-
-fn concat_digits(a: u32, b: u32) -> u32 {
-    debug_assert!((0..=9).contains(&a));
-    debug_assert!((0..=9).contains(&b));
-    a * 10 + b
-}
-
-fn first_digit(digits: &str) -> u32 {
-    digits.chars().next().unwrap().to_digit(10).unwrap()
-}
-
-fn last_digit(digits: &str) -> u32 {
-    digits.chars().last().unwrap().to_digit(10).unwrap()
-}
-
-fn replace_number_words_with_digits(s: &str) -> String {
-    let re = Regex::new(r"one|two|three|four|five|six|seven|eight|nine").unwrap();
-
-    re.replace_all(s, |m: &Captures| match &m[0] {
-        "one" => "1",
-        "two" => "2",
-        "three" => "3",
-        "four" => "4",
-        "five" => "5",
-        "six" => "6",
-        "seven" => "7",
-        "eight" => "8",
-        "nine" => "9",
-        _ => unreachable!("impossible match with regex"),
-    })
-    .into_owned()
 }
 
 fn part1(input: &str) -> Answer {
@@ -77,8 +41,6 @@ fn part2(input: &str) -> Answer {
                 .chars()
                 .filter(|c| c.is_ascii_digit())
                 .collect::<String>();
-
-            println!("{}", &digits);
 
             match digits.len() {
                 0 => panic!("puzzle input must contain digits"),
@@ -121,11 +83,28 @@ zoneight234
 
     #[test]
     fn test_replace_number_words_with_digits() {
-        assert_eq!(replace_number_words_with_digits("eightwothree"), "8wo3");
+        assert_eq!(
+            replace_number_words_with_digits("eightwothree"),
+            "ei8ht2oth3ee"
+        );
     }
 
     #[test]
     fn test_part2() {
         assert_eq!(part2(PART2_INPUT), 281);
+    }
+
+    #[test]
+    fn test_part2_edge_cases() {
+        assert_eq!(part2("eightwo"), 82);
+
+        assert_eq!(part2("eightwoneight"), 88);
+        assert_eq!(part2("eightwoneight\neightwoneight"), 88 + 88);
+
+        assert_eq!(
+            part2("klklklnineeeeesevenoneenlklklklesenvnsevonoesnvoonsevnvesnoovneonejsjsj"),
+            91
+        );
+        assert_eq!(part2("oooneight2threeight4"), 14);
     }
 }
