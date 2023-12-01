@@ -1,5 +1,3 @@
-use fancy_regex::{Captures, Regex};
-
 pub fn concat_digits(a: u32, b: u32) -> u32 {
     debug_assert!((0..=9).contains(&a));
     debug_assert!((0..=9).contains(&b));
@@ -46,21 +44,13 @@ pub fn last_digit(digits: &str) -> u32 {
 /// assert_eq!(digits_only, "18");
 /// ```
 pub fn replace_number_words_with_digits(s: &str) -> String {
-    // This regex uses lookarounds - lookahead (?=) and lookbehind (?<=) - to match a minimal, unique subset of a "digit word"
-    let re = Regex::new(r"(?<=o)n(?=e)|(?<=t)w(?=o)|(?<=th)r(?=ee)|(?<=fo)u(?=r)|(?<=fi)v(?=e)|(?<=si)x|(?=se)v(?=en)|(?<=ei)g(?=ht)|(?<=n)i(?=ne)").unwrap();
-
-    // match the unique subset because the lookarounds aren't captured and thus aren't replaced
-    re.replace_all(s, |m: &Captures| match &m[0] {
-        "n" => "1",
-        "w" => "2",
-        "r" => "3",
-        "u" => "4",
-        "v" => "5",
-        "x" => "6",
-        "ev" => "7",
-        "g" => "8",
-        "i" => "9",
-        _ => unreachable!("impossible match with regex"),
-    })
-    .into_owned()
+    s.replace("one", "o1e")
+        .replace("two", "t2o")
+        .replace("three", "th3ee")
+        .replace("four", "fo4r")
+        .replace("five", "fi5e")
+        .replace("six", "si6")
+        .replace("seven", "se7en")
+        .replace("eight", "ei8ht")
+        .replace("nine", "n9ne")
 }

@@ -5,5 +5,4 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-fancy-regex = "0.12.0"
 shared = { path = "../../../shared" }
