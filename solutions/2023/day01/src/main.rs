@@ -1,6 +1,7 @@
 use std::sync::{mpsc, Arc};
 
-use aoc_2023_day01::{concat_digits, first_digit, last_digit, replace_number_words_with_digits};
+use aoc_2023_day01::{concat_digits, digit_parser, digit_word_parser};
+use parsely::Parse;
 use shared::{read_input, receive_answers, run_part_threaded};
 
 type Answer = u32;
@@ -20,15 +21,10 @@ fn part1(input: &str) -> Answer {
     input
         .lines()
         .map(|line| {
-            let digits = line
-                .chars()
-                .filter(|c| c.is_ascii_digit())
-                .collect::<String>();
+            let (digits, _): (Vec<u32>, _) =
+                digit_parser().many(1..).parse(line).expect("parse input");
 
-            match digits.len() {
-                0 => panic!("puzzle input must contain digits"),
-                _ => concat_digits(first_digit(&digits), last_digit(&digits)),
-            }
+            concat_digits(digits[0], digits[digits.len() - 1])
         })
         .sum()
 }
@@ -37,15 +33,12 @@ fn part2(input: &str) -> Answer {
     input
         .lines()
         .map(|line| {
-            let digits = replace_number_words_with_digits(line)
-                .chars()
-                .filter(|c| c.is_ascii_digit())
-                .collect::<String>();
+            let (digits, _): (Vec<u32>, _) = digit_word_parser()
+                .many(1..)
+                .parse(line)
+                .expect("parse input");
 
-            match digits.len() {
-                0 => panic!("puzzle input must contain digits"),
-                _ => concat_digits(first_digit(&digits), last_digit(&digits)),
-            }
+            concat_digits(digits[0], digits[digits.len() - 1])
         })
         .sum()
 }
@@ -79,14 +72,6 @@ zoneight234
     #[test]
     fn test_part1() {
         assert_eq!(part1(INPUT), 142);
-    }
-
-    #[test]
-    fn test_replace_number_words_with_digits() {
-        assert_eq!(
-            replace_number_words_with_digits("eightwothree"),
-            "ei8ht2oth3ee"
-        );
     }
 
     #[test]
