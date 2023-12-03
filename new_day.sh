@@ -14,17 +14,17 @@ fi
 
 YEAR=$1
 DAY='day'$(printf '%02d' "$2")
+CRATE_DIR=solutions/$YEAR/$DAY
+TEMPLATE_DIR=templates/YYYY/dayXX
 
 cd solutions/$YEAR
-echo $PWD
 cargo new $DAY
-
-cp ../2022/day01/Cargo.toml "$DAY/Cargo.toml"
-sed -i "$DAY/Cargo.toml" -e "s/day01/$DAY/"
-sed -i "$DAY/Cargo.toml" -e "s/2022/$YEAR/"
-
-cp ../2022/day01/src/main.rs "$DAY/src/main.rs"
-sed -i "$DAY/src/main.rs" -e "s/read_input(2022, 1)/read_input($YEAR, $2)/"
-
 cd -
+
+cp "$TEMPLATE_DIR/Cargo.toml" "$CRATE_DIR/Cargo.toml"
+sed -i "$CRATE_DIR/Cargo.toml" -e "s/\\\$DAY/$DAY/" -e "s/\\\$YEAR/$YEAR/"
+
+cp "$TEMPLATE_DIR/src/main.rs" "$CRATE_DIR/src/main.rs"
+sed -i "$CRATE_DIR/src/main.rs" -e "s/\\\$YEAR/$YEAR/" -e "s/\\\$DAY/$2/"
+
 cargo advent --year $YEAR --day $2

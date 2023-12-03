@@ -15,6 +15,8 @@ pub mod pathfinding;
 #[cfg(feature = "types_2d")]
 pub mod types_2d;
 
+pub use indoc::indoc;
+
 /// Generic error for when the value of something is wrong
 ///
 /// Fine for simple parsing of types from Strings

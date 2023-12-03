@@ -1,0 +1,8 @@
+[package]
+name = "aoc-$YEAR-$DAY"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+shared = { path = "../../../shared" }

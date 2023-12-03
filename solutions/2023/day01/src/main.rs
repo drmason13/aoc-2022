@@ -45,20 +45,26 @@ fn part2(input: &str) -> Answer {
 
 #[cfg(test)]
 mod test {
+    use shared::indoc;
+
     use super::*;
 
-    const INPUT: &str = r"1abc2
-pqr3stu8vwx
-a1b2c3d4e5f
-treb7uchet";
+    const INPUT: &str = indoc! {r#"
+        1abc2
+        pqr3stu8vwx
+        a1b2c3d4e5f
+        treb7uchet
+    "#};
 
-    const PART2_INPUT: &str = r"two1nine
-eightwothree
-abcone2threexyz
-xtwone3four
-4nineeightseven2
-zoneight234
-7pqrstsixteen";
+    const PART2_INPUT: &str = indoc! {r#"
+        two1nine
+        eightwothree
+        abcone2threexyz
+        xtwone3four
+        4nineeightseven2
+        zoneight234
+        7pqrstsixteen
+    "#};
 
     #[test]
     fn test_concat_digits() {
