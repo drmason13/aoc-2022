@@ -1,0 +1,9 @@
+[package]
+name = "aoc-2023-day02"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+parsely = { path = "../../../shared/../../parsely" }
+shared = { path = "../../../shared" }
