@@ -29,7 +29,7 @@ impl Game {
 mod parsers {
     use std::collections::HashMap;
 
-    use parsely::{char, switch, token, uint, Lex, Parse, ParseResult};
+    use parsely::{char, switch, token, uint, ws, Lex, Parse, ParseResult};
 
     use crate::{Color, Game};
 
@@ -39,30 +39,21 @@ mod parsers {
             .skip_then(uint::<u32>())
             .then_skip(char(':'))
             .then(selection_set().many(1..50).delimiter(char(';').pad()))
-            .map(|(id, selections)| {
-                let selections = selections.into_iter().collect::<Vec<_>>();
-
-                Game::new(id, selections)
-            })
+            .map(|(id, selections)| Game::new(id, selections))
             .parse(input)
     }
 
     /// 3 blue, 4 red
     fn selection_set() -> impl Parse<Output = HashMap<Color, u32>> {
-        selection().many(1..=3).map(|color_counts| {
-            color_counts
-                .into_iter()
-                .map(|(n, c)| (c, n))
-                .collect::<HashMap<Color, u32>>()
-        })
+        selection()
+            .many(1..=3)
+            .delimiter(char(',').pad())
+            .map(|color_counts| color_counts.into_iter().collect::<HashMap<Color, u32>>())
     }
 
-    /// 3 blue[,]
-    fn selection() -> impl Parse<Output = (u32, Color)> {
-        uint::<u32>()
-            .pad()
-            .then(color())
-            .then_skip(char(',').optional())
+    /// 3 blue
+    fn selection() -> impl Parse<Output = (Color, u32)> {
+        uint::<u32>().then_skip(ws()).then(color()).swap()
     }
 
     /// blue
