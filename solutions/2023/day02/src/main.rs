@@ -29,7 +29,7 @@ impl Game {
 mod parsers {
     use std::collections::HashMap;
 
-    use parsely::{char, switch, token, uint, ws, Lex, Parse, ParseResult};
+    use parsely::{switch, token, uint, ws, Lex, Parse, ParseResult};
 
     use crate::{Color, Game};
 
@@ -37,8 +37,8 @@ mod parsers {
     pub fn game(input: &str) -> ParseResult<Game> {
         token("Game ")
             .skip_then(uint::<u32>())
-            .then_skip(char(':'))
-            .then(selection_set().many(1..50).delimiter(char(';').pad()))
+            .then_skip(':')
+            .then(selection_set().many(1..50).delimiter(';'.pad()))
             .map(|(id, selections)| Game::new(id, selections))
             .parse(input)
     }
@@ -47,7 +47,7 @@ mod parsers {
     fn selection_set() -> impl Parse<Output = HashMap<Color, u32>> {
         selection()
             .many(1..=3)
-            .delimiter(char(',').pad())
+            .delimiter(','.pad())
             .map(|color_counts| color_counts.into_iter().collect::<HashMap<Color, u32>>())
     }
 

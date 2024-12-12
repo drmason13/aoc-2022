@@ -613,7 +613,7 @@ impl<'a> NeighbourIter<'a> {
     }
 }
 
-impl<'a> Iterator for NeighbourIter<'a> {
+impl Iterator for NeighbourIter<'_> {
     type Item = Coords;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -621,7 +621,7 @@ impl<'a> Iterator for NeighbourIter<'a> {
     }
 }
 
-impl<'a> FusedIterator for NeighbourIter<'a> {}
+impl FusedIterator for NeighbourIter<'_> {}
 
 #[cfg(test)]
 mod tests {

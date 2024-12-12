@@ -88,7 +88,7 @@ impl HeightMap {
     }
 }
 
-impl<'a> Iterator for HeightMapIter<'a> {
+impl Iterator for HeightMapIter<'_> {
     type Item = u32;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -123,9 +123,9 @@ impl<'a> Iterator for HeightMapIter<'a> {
     }
 }
 
-impl<'a> FusedIterator for HeightMapIter<'a> {}
+impl FusedIterator for HeightMapIter<'_> {}
 
-impl<'a> Iterator for HeightMapVisibleIter<'a> {
+impl Iterator for HeightMapVisibleIter<'_> {
     type Item = u32;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -170,7 +170,7 @@ impl<'a> Iterator for HeightMapVisibleIter<'a> {
     }
 }
 
-impl<'a> FusedIterator for HeightMapVisibleIter<'a> {}
+impl FusedIterator for HeightMapVisibleIter<'_> {}
 
 fn main() {
     let (tx, rx) = mpsc::channel();

@@ -18,7 +18,7 @@ struct ArenaIter<'a, T> {
     arena: &'a Arena<T>,
 }
 
-impl<'a, T> Iterator for ArenaIter<'a, T> {
+impl<T> Iterator for ArenaIter<'_, T> {
     type Item = Index<T>;
 
     fn next(&mut self) -> Option<Self::Item> {

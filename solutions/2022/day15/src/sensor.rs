@@ -275,7 +275,7 @@ pub struct Sensors<'a> {
     iter: Box<dyn Iterator<Item = Sensor> + 'a>,
 }
 
-impl<'a> Iterator for Sensors<'a> {
+impl Iterator for Sensors<'_> {
     type Item = Sensor;
 
     fn next(&mut self) -> Option<Self::Item> {

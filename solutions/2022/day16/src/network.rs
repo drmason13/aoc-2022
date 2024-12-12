@@ -49,7 +49,7 @@ pub struct NeighboursIter<'a> {
     iter: Box<dyn Iterator<Item = NodeId> + 'a>,
 }
 
-impl<'a> Iterator for NeighboursIter<'a> {
+impl Iterator for NeighboursIter<'_> {
     type Item = NodeId;
 
     fn next(&mut self) -> Option<Self::Item> {

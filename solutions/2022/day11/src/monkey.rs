@@ -20,7 +20,7 @@ pub fn parse_monkey(input: &str) -> Monkey {
 
     let operation = lines[2].trim();
     let split_at_index = operation
-        .find(|ch| matches!(ch, '+' | '*'))
+        .find(['+', '*'])
         .expect("valid input");
     let (_, operation) = operation.split_at(split_at_index);
     let operation: Box<dyn Fn(u64) -> u64> = if operation.starts_with('+') {

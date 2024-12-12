@@ -75,12 +75,12 @@ impl Branches {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct PairStep {
-    pub yld: usize,
-    pub my_node: NodeId,
-    pub el_node: NodeId,
-    pub my_duration: usize,
-    pub el_duration: usize,
-    pub branch: BranchId,
-}
+// #[derive(Debug, Clone)]
+// pub struct PairStep {
+//     pub yld: usize,
+//     pub my_node: NodeId,
+//     pub el_node: NodeId,
+//     pub my_duration: usize,
+//     pub el_duration: usize,
+//     pub branch: BranchId,
+// }

@@ -8,8 +8,6 @@ use std::{
 };
 
 pub mod arithmetic;
-#[cfg(feature = "parsing")]
-pub mod parsers;
 #[cfg(feature = "pathfinding")]
 pub mod pathfinding;
 #[cfg(feature = "types_2d")]
