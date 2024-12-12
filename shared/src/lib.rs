@@ -13,6 +13,9 @@ pub mod pathfinding;
 #[cfg(feature = "types_2d")]
 pub mod types_2d;
 
+#[cfg(feature = "parsing")]
+pub use parsely as parsing;
+
 pub use indoc::indoc;
 
 /// Generic error for when the value of something is wrong

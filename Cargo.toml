@@ -1,5 +1,5 @@
 [workspace]
-members = ["shared", "solutions/*/day*"]
+members = ["shared", "solutions/2024/day*"]
 resolver = "2"
 
 [workspace.package]

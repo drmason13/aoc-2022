@@ -10,7 +10,12 @@ indoc = "2.0.4"
 version = "0.10.5"
 optional = true
 
+[dependencies.parsely]
+path = "../../parsely"
+optional = true
+
 [features]
 default = []
 types_2d = ["dep:itertools"]
 pathfinding = []
+parsing = ["dep:parsely"]

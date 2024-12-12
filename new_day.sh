@@ -17,6 +17,7 @@ DAY='day'$(printf '%02d' "$2")
 CRATE_DIR=solutions/$YEAR/$DAY
 TEMPLATE_DIR=templates/YYYY/dayXX
 
+mkdir -p solutions/$YEAR
 cd solutions/$YEAR
 cargo new $DAY
 cd -
